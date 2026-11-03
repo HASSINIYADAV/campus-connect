@@ -80,6 +80,11 @@ input::placeholder { color: #9ba7bc; }
 .icon-button, .profile-button { border: 0; color: #27395d; background: transparent; font-size: 17px; }
 .avatar { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #263654; background: #edf2ff; font-size: 11px; font-weight: 700; }
 .profile-button { padding: 4px; }
+.top-menu-wrap { position: relative; display: flex; align-items: center; }
+.top-popover { position: absolute; z-index: 10; top: calc(100% + 12px); right: 0; width: max-content; max-width: min(300px, 80vw); border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px; color: #52617b; background: white; box-shadow: var(--shadow); font-size: 11px; line-height: 1.5; }
+.profile-popover { display: grid; gap: 10px; min-width: 190px; }
+.profile-popover strong { overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.profile-popover .text-button { justify-self: start; }
 .content { width: min(1366px, 100%); margin: 0 auto; padding: 22px 38px 42px; }
 .preview-banner { display: flex; align-items: center; gap: 8px; width: fit-content; margin-bottom: 16px; border: 1px solid #e8d9ac; border-radius: 7px; padding: 7px 10px; color: #75622e; background: #fffaf0; font-size: 10px; }
 .preview-dot { width: 7px; height: 7px; border-radius: 50%; background: #d4a63a; }

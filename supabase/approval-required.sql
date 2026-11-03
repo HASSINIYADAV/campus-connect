@@ -1,7 +1,8 @@
--- Review before applying to project kevqtapluzqlbcpglnvr.
--- This proposal is intentionally not executed. It creates the public event-read
--- rule and an authenticated, owner-scoped registration table for the app.
+-- CampusConnect production setup for project kevqtapluzqlbcpglnvr.
+-- The existing events and registrations tables are preserved.
 
+-- Event listings are public in this app. Only public event rows are readable;
+-- no write policy is created for events.
 grant select on table public.events to anon, authenticated;
 
 create policy "Campus events are visible to visitors"
@@ -10,37 +11,35 @@ create policy "Campus events are visible to visitors"
   to anon, authenticated
   using (true);
 
-create table public.event_registrations (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users (id) on delete cascade,
-  event_id uuid not null references public.events (id) on delete cascade,
-  attendee_name text not null,
-  attendee_email text not null,
-  college text,
-  payment_status text not null default 'pending'
-    check (payment_status in ('pending', 'paid', 'cancelled')),
-  created_at timestamptz not null default now(),
-  constraint event_registrations_one_per_user unique (event_id, user_id)
-);
+-- The existing registrations table points user_id at public.users. CampusConnect
+-- Auth IDs come from auth.users, so point registrations at the authenticated
+-- identity table. The current registrations table is empty (verified 2026-11-03).
+alter table public.registrations
+  drop constraint registrations_user_id_fkey;
 
-create index event_registrations_user_id_idx
-  on public.event_registrations (user_id);
+alter table public.registrations
+  add constraint registrations_user_id_fkey
+  foreign key (user_id) references auth.users (id) on delete cascade;
 
-alter table public.event_registrations enable row level security;
+alter table public.registrations
+  alter column event_id set not null,
+  alter column created_at set default now(),
+  alter column created_at set not null;
 
-grant select, insert on table public.event_registrations to authenticated;
+alter table public.registrations
+  add constraint registrations_one_per_event unique (event_id, user_id);
+
+alter table public.registrations enable row level security;
+grant select, insert on table public.registrations to authenticated;
 
 create policy "Attendees can view their own registrations"
-  on public.event_registrations
+  on public.registrations
   for select
   to authenticated
   using ((select auth.uid()) = user_id);
 
 create policy "Attendees can register themselves"
-  on public.event_registrations
+  on public.registrations
   for insert
   to authenticated
-  with check (
-    (select auth.uid()) = user_id
-    and lower(attendee_email) = lower((select auth.jwt() ->> 'email'))
-  );
+  with check ((select auth.uid()) = user_id);

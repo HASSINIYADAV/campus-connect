@@ -15,6 +15,8 @@ const state = {
   notice: "",
   noticeKind: "info",
   pendingConfirmationEmail: "",
+  profileMenuOpen: false,
+  notificationsOpen: false,
 };
 
 const app = document.querySelector("#app");
@@ -66,7 +68,7 @@ function authView() {
 
 function topbar() {
   const userName = state.session?.user?.user_metadata?.full_name || state.session?.user?.user_metadata?.name || state.session?.user?.email || "Campus user";
-  return `<header class="topbar">${brand(true)}<label class="global-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" value="${escapeHtml(state.search)}" placeholder="Search events, categories, or keywords…" aria-label="Search events"></label><div class="top-actions"><button class="icon-button" aria-label="Notifications" title="Notifications">♧</button><span class="avatar">${escapeHtml(initials(userName))}</span><button class="profile-button" data-action="profile" aria-label="Profile menu">⌄</button></div></header>`;
+  return `<header class="topbar">${brand(true)}<label class="global-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" value="${escapeHtml(state.search)}" placeholder="Search events, categories, or keywords…" aria-label="Search events"></label><div class="top-actions"><div class="top-menu-wrap"><button class="icon-button" data-action="notifications" aria-label="Notifications" title="Notifications">♧</button>${state.notificationsOpen ? `<div class="top-popover" role="status">You’re all caught up. Event notifications will appear here.</div>` : ""}</div><span class="avatar">${escapeHtml(initials(userName))}</span><div class="top-menu-wrap"><button class="profile-button" data-action="profile" aria-label="Profile menu" aria-expanded="${state.profileMenuOpen}">⌄</button>${state.profileMenuOpen ? `<div class="top-popover profile-popover"><strong>${escapeHtml(userName)}</strong><button class="text-button" data-action="signout">Sign out</button></div>` : ""}</div></div></header>`;
 }
 
 function banner() {
@@ -120,7 +122,7 @@ function registrationView() {
   const name = user?.user_metadata?.full_name || user?.user_metadata?.name || "";
   const email = user?.email || "";
   const amount = event.price == null ? "To be announced" : `₹${Number(event.price)}`;
-  return `<main class="app-shell">${topbar()}<section class="content registration-content">${state.notice ? `<div class="notice ${state.noticeKind}" role="status">${escapeHtml(state.notice)}</div>` : ""}<div class="registration-heading"><h1>Complete your registration</h1><p>You're one step closer to your next campus experience.</p></div><div class="stepper"><div class="step active"><span>1</span><small>Event details</small></div><i></i><div class="step active"><span>2</span><small>Registration</small></div><i></i><div class="step"><span>3</span><small>Payment</small></div></div><div class="registration-grid"><form id="registration-form" class="attendee-card"><h2>Attendee information</h2><p class="subtle">Fields marked * are required.</p><label>Full name *<input name="fullName" autocomplete="name" value="${escapeHtml(name)}" placeholder="Enter your full name" required></label><label>Email address *<input name="email" type="email" autocomplete="email" value="${escapeHtml(email)}" placeholder="you@college.edu" required></label><label>College / department<input name="college" placeholder="Enter your college or department"></label><div class="info-box"><span>ⓘ</span><p>Use the email address linked to your CampusConnect account. Your registration is saved as pending until payment instructions are confirmed.</p></div><button class="primary-button full-width mobile-submit" type="submit" ${state.busy ? "disabled" : ""}>${state.busy ? "Saving…" : "Confirm registration"}</button></form><aside class="payment-card"><h2>Event summary</h2><div class="summary-event">${artwork(event)}<div><b>${escapeHtml(event.title)}</b><span class="category-label">${escapeHtml(event.category)}</span><small>◷ &nbsp;${escapeHtml(event.date)}</small><small>⌖ &nbsp;${escapeHtml(event.venue)}</small></div></div><section class="payment-box"><h3>Payment details</h3><div class="payment-layout">${qrPlaceholder()}<div><b>Payment QR setup pending</b><p>The organizer’s verified payment details will appear here.</p><span class="amount-label">Amount</span><strong class="amount">${amount}</strong></div></div></section><p class="payment-note">Your registration will remain pending until payment is confirmed.</p><button class="primary-button full-width desktop-submit" type="submit" form="registration-form" ${state.busy ? "disabled" : ""}>${state.busy ? "Saving…" : "Confirm registration"}</button></aside></div></section></main>`;
+  return `<main class="app-shell">${topbar()}<section class="content registration-content">${state.notice ? `<div class="notice ${state.noticeKind}" role="status">${escapeHtml(state.notice)}</div>` : ""}<div class="registration-heading"><h1>Complete your registration</h1><p>You're one step closer to your next campus experience.</p></div><div class="stepper"><div class="step active"><span>1</span><small>Event details</small></div><i></i><div class="step active"><span>2</span><small>Registration</small></div><i></i><div class="step"><span>3</span><small>Payment</small></div></div><div class="registration-grid"><form id="registration-form" class="attendee-card"><h2>Attendee information</h2><p class="subtle">We’ll use the name and email on your signed-in account.</p><label>Full name<input value="${escapeHtml(name || "Name not provided")}" readonly></label><label>Email address<input type="email" value="${escapeHtml(email)}" readonly></label><div class="info-box"><span>ⓘ</span><p>Your registration is saved to your account. Payment is not collected here; contact the event organizer for payment details.</p></div><button class="primary-button full-width mobile-submit" type="submit" ${state.busy ? "disabled" : ""}>${state.busy ? "Saving…" : "Confirm registration"}</button></form><aside class="payment-card"><h2>Event summary</h2><div class="summary-event">${artwork(event)}<div><b>${escapeHtml(event.title)}</b><span class="category-label">${escapeHtml(event.category)}</span><small>◷ &nbsp;${escapeHtml(event.date)}</small><small>⌖ &nbsp;${escapeHtml(event.venue)}</small></div></div><section class="payment-box"><h3>Payment details</h3><div class="payment-layout">${qrPlaceholder()}<div><b>Organizer payment setup pending</b><p>This app does not collect or confirm payments.</p><span class="amount-label">Amount</span><strong class="amount">${amount}</strong></div></div></section><p class="payment-note">Registration is saved to your account; contact the organizer about capacity and payment.</p><button class="primary-button full-width desktop-submit" type="submit" form="registration-form" ${state.busy ? "disabled" : ""}>${state.busy ? "Saving…" : "Confirm registration"}</button></aside></div></section></main>`;
 }
 
 function render() {
@@ -160,7 +162,7 @@ async function handleAuthSubmit(form) {
     if (!supabase) throw new Error("Supabase is not configured yet. Add the project URL and publishable key to .env.local.");
     if (state.authMode === "signup") {
       const fullName = String(values.get("fullName") || "").trim();
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/` } });
       if (error) throw error;
       if (!data.session) {
         state.busy = false;
@@ -198,20 +200,16 @@ async function handleRegistration(form) {
   const event = state.selectedEvent;
   if (!state.session) { state.view = "auth"; state.authMode = "signin"; setNotice("Sign in before registering for an event."); return; }
   if (!event.live) { setNotice("This is a sample event. Connect a live event before submitting a registration.", "error"); return; }
-  const values = new FormData(form);
   state.busy = true; render();
   try {
-    const { error } = await supabase.from("event_registrations").insert({
+    const { error } = await supabase.from("registrations").insert({
       user_id: state.session.user.id,
       event_id: event.id,
-      attendee_name: String(values.get("fullName") || "").trim(),
-      attendee_email: String(values.get("email") || "").trim(),
-      college: String(values.get("college") || "").trim() || null,
-      payment_status: "pending",
     });
+    if (error?.code === "23505") throw new Error("You’re already registered for this event.");
     if (error) throw error;
     state.busy = false; state.view = "explore";
-    state.notice = "Registration saved as pending. The organizer will share verified payment instructions.";
+    state.notice = "You’re registered. Payment isn’t collected here; contact the event organizer for details.";
     state.noticeKind = "success";
     render();
   } catch (error) {
@@ -232,7 +230,7 @@ function bindEvents() {
       if (!supabase) return setNotice("Supabase is not configured yet.", "error");
       state.busy = true; state.notice = ""; render();
       try {
-        const { error } = await supabase.auth.resend({ type: "signup", email });
+        const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${window.location.origin}/` } });
         if (error) throw error;
         state.busy = false; state.pendingConfirmationEmail = email;
         setNotice("If this account needs confirmation, a new email is on its way. Check your inbox and spam folder.", "success");
@@ -262,7 +260,16 @@ function bindEvents() {
     }
     if (action === "home") { event.preventDefault(); state.view = state.session ? "explore" : "auth"; state.notice = ""; render(); }
     if (action === "profile") {
-      if (!state.session) return;
+      state.profileMenuOpen = !state.profileMenuOpen;
+      state.notificationsOpen = false;
+      render();
+    }
+    if (action === "notifications") {
+      state.notificationsOpen = !state.notificationsOpen;
+      state.profileMenuOpen = false;
+      render();
+    }
+    if (action === "signout") {
       const { error } = await supabase.auth.signOut();
       state.session = null; state.view = "auth"; state.authMode = "signin";
       state.notice = error ? error.message : "You have been signed out."; state.noticeKind = error ? "error" : "info"; render();
