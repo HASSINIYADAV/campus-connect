@@ -185,6 +185,11 @@ async function handleAuthSubmit(form) {
       setNotice("Confirm your email before signing in. Open the confirmation email or resend it below.", "error");
       return;
     }
+    if (error?.code === "over_email_send_rate_limit" || /email rate limit exceeded/i.test(error?.message || "")) {
+      state.pendingConfirmationEmail = email;
+      setNotice("Supabase has temporarily limited confirmation emails. Check your inbox and spam folder for an earlier email, then try resending after the hourly limit resets.", "error");
+      return;
+    }
     setNotice(error instanceof Error ? error.message : "Unable to sign in right now.", "error");
   }
 }
@@ -233,7 +238,12 @@ function bindEvents() {
         setNotice("If this account needs confirmation, a new email is on its way. Check your inbox and spam folder.", "success");
       } catch (error) {
         state.busy = false;
-        setNotice(error instanceof Error ? error.message : "Could not resend the confirmation email.", "error");
+        if (error?.code === "over_email_send_rate_limit" || /email rate limit exceeded/i.test(error?.message || "")) {
+          state.pendingConfirmationEmail = email;
+          setNotice("Supabase has temporarily limited confirmation emails. Check your inbox and spam folder, then try again after the hourly limit resets.", "error");
+        } else {
+          setNotice(error instanceof Error ? error.message : "Could not resend the confirmation email.", "error");
+        }
       }
     }
     if (action === "google") {
