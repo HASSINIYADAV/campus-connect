@@ -18,7 +18,7 @@ The connected project has `users`, `events`, and `registrations` tables. The app
 
 The two existing event rows have no date or status, so they will appear with “Date to be announced” until an organizer fills in the event details. The app does not collect payment or mark a registration as paid. The QR graphic is illustrative only.
 
-In Supabase **Authentication → URL Configuration**, set the Site URL to `https://campus-connect-mu-three.vercel.app` and add that exact URL to the Redirect URLs allow list. Sign-up, resend, password reset, and Google OAuth callbacks use the current app origin. Keep email confirmation enabled. The hosted test email sender is rate-limited; configure custom SMTP in Supabase Auth settings before opening sign-up to general users. Google sign-in also requires enabling the Google provider and adding its OAuth client ID and secret directly in Supabase settings. Never place provider secrets or service-role keys in the browser app or chat.
+Supabase **Authentication → URL Configuration** now uses `https://campus-connect-mu-three.vercel.app` as the Site URL and includes it in the Redirect URLs allow list. Sign-up, resend, password reset, and Google OAuth callbacks use the current app origin. Keep email confirmation enabled. The hosted test email sender is rate-limited; configure custom SMTP in Supabase Auth settings before opening sign-up to general users. Google sign-in also requires enabling the Google provider and adding its OAuth client ID and secret directly in Supabase settings. Never place provider secrets or service-role keys in the browser app or chat.
 
 ## Deploy
 
