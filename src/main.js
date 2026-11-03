@@ -239,7 +239,9 @@ function bindEvents() {
     if (action === "google") {
       if (!supabase) return setNotice("Supabase is not configured yet.", "error");
       const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
-      if (error) setNotice(error.message, "error");
+      if (error) setNotice(/provider is not enabled/i.test(error.message)
+        ? "Google sign-in is not enabled in Supabase yet. Use email and password, or configure Google under Supabase Authentication → Providers."
+        : error.message, "error");
     }
     if (action === "forgot") {
       const email = document.querySelector('[name="email"]')?.value.trim();
