@@ -14,6 +14,7 @@ const state = {
   busy: false,
   notice: "",
   noticeKind: "info",
+  pendingConfirmationEmail: "",
 };
 
 const app = document.querySelector("#app");
@@ -46,6 +47,7 @@ function authView() {
       <section class="auth-card" aria-labelledby="auth-title">
         <header><h2 id="auth-title">${signingUp ? "Create your account" : "Welcome back!"}</h2><p>${signingUp ? "Join CampusConnect and find your people." : "Sign in to your CampusConnect account."}</p></header>
         ${state.notice ? `<div class="notice ${state.noticeKind}" role="status">${escapeHtml(state.notice)}</div>` : ""}
+        ${state.pendingConfirmationEmail ? `<button class="text-button confirmation-resend" type="button" data-action="resend" ${state.busy ? "disabled" : ""}>Resend confirmation email</button>` : ""}
         <form id="auth-form" class="auth-form">
           ${signingUp ? `<label>Full name<input name="fullName" autocomplete="name" placeholder="Enter your name" required></label>` : ""}
           <label>Email address<input name="email" type="email" autocomplete="email" placeholder="you@college.edu" required></label>
@@ -162,19 +164,27 @@ async function handleAuthSubmit(form) {
       if (error) throw error;
       if (!data.session) {
         state.busy = false;
+        state.pendingConfirmationEmail = email;
         setNotice("Check your email to confirm your account, then sign in.", "success");
         return;
       }
+      state.pendingConfirmationEmail = "";
       state.session = data.session; state.view = "explore";
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      state.pendingConfirmationEmail = "";
       state.session = data.session; state.view = "explore";
     }
     state.busy = false; state.notice = "";
     await loadEvents(); render();
   } catch (error) {
     state.busy = false;
+    if (error?.code === "email_not_confirmed" || /email not confirmed/i.test(error?.message || "")) {
+      state.pendingConfirmationEmail = email;
+      setNotice("Confirm your email before signing in. Open the confirmation email or resend it below.", "error");
+      return;
+    }
     setNotice(error instanceof Error ? error.message : "Unable to sign in right now.", "error");
   }
 }
@@ -211,6 +221,21 @@ function bindEvents() {
   document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async (event) => {
     const action = button.dataset.action;
     if (action === "toggle-auth") { state.authMode = state.authMode === "signin" ? "signup" : "signin"; state.notice = ""; render(); }
+    if (action === "resend") {
+      const email = state.pendingConfirmationEmail || document.querySelector('[name="email"]')?.value.trim();
+      if (!email) return setNotice("Enter your email address first.", "error");
+      if (!supabase) return setNotice("Supabase is not configured yet.", "error");
+      state.busy = true; state.notice = ""; render();
+      try {
+        const { error } = await supabase.auth.resend({ type: "signup", email });
+        if (error) throw error;
+        state.busy = false; state.pendingConfirmationEmail = email;
+        setNotice("If this account needs confirmation, a new email is on its way. Check your inbox and spam folder.", "success");
+      } catch (error) {
+        state.busy = false;
+        setNotice(error instanceof Error ? error.message : "Could not resend the confirmation email.", "error");
+      }
+    }
     if (action === "google") {
       if (!supabase) return setNotice("Supabase is not configured yet.", "error");
       const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
