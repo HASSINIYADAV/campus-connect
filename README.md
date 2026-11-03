@@ -14,7 +14,7 @@ The browser app uses only the Supabase publishable key. Never put a Supabase sec
 
 ## Supabase setup
 
-The connected project has `users`, `events`, and `registrations` tables. The app reads from `events` and writes to `registrations`. The SQL in `supabase/approval-required.sql` matches those tables, publishes event rows for reading, points registration ownership at Supabase Auth users, and restricts each registration to its owner. Apply it in the Supabase SQL Editor before expecting live events and registration to work.
+The connected project has `users`, `events`, and `registrations` tables. The app reads from `events` and writes to `registrations`. The SQL in `supabase/approval-required.sql` has been applied to project `kevqtapluzqlbcpglnvr`: event rows are readable, registration ownership points to Supabase Auth users, and each attendee can only insert/read their own registration. Keep the SQL file as a record; do not run it again because it adds constraints and policies that already exist.
 
 The two existing event rows have no date or status, so they will appear with “Date to be announced” until an organizer fills in the event details. The app does not collect payment or mark a registration as paid. The QR graphic is illustrative only.
 

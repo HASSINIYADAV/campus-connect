@@ -1,5 +1,7 @@
--- CampusConnect production setup for project kevqtapluzqlbcpglnvr.
--- The existing events and registrations tables are preserved.
+-- Applied to project kevqtapluzqlbcpglnvr as migration
+-- campusconnect_event_read_and_registrations on 2026-11-03.
+-- Reference only. Do not run again; policies and constraints already exist.
+-- The existing events and registrations tables were preserved.
 
 -- Event listings are public in this app. Only public event rows are readable;
 -- no write policy is created for events.
