@@ -162,7 +162,7 @@ async function handleAuthSubmit(form) {
     if (!supabase) throw new Error("Supabase is not configured yet. Add the project URL and publishable key to .env.local.");
     if (state.authMode === "signup") {
       const fullName = String(values.get("fullName") || "").trim();
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/` } });
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin } });
       if (error) throw error;
       if (!data.session) {
         state.busy = false;
@@ -230,7 +230,7 @@ function bindEvents() {
       if (!supabase) return setNotice("Supabase is not configured yet.", "error");
       state.busy = true; state.notice = ""; render();
       try {
-        const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${window.location.origin}/` } });
+        const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: window.location.origin } });
         if (error) throw error;
         state.busy = false; state.pendingConfirmationEmail = email;
         setNotice("If this account needs confirmation, a new email is on its way. Check your inbox and spam folder.", "success");
